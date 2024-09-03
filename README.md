@@ -56,10 +56,31 @@ The Flight Data Portal is a web application designed to query and visualize flig
 5. **Run the Flask server:**
 
    ```bash
-   python api.py
+   python3 api.py
    ```
 
 6. **Open `Flight_Data_Portal.html` in a web browser to use the application.**
+
+
+## Screenshots
+
+Here are some screenshots of the application:
+
+### Flight_Portal
+![Flight_Portal](/static/images/Flight_Portal.png)
+
+###  Visualize percentage of delayed flights by route
+![ Visualize percentage of delayed flights by route](/static/images/flights_by_route.png)
+
+### Visualize delayed flights by airline
+![Visualize delayed flights by airline](/static/images/flights_by_airline.png)
+
+### Visualize percentage of delayed flights per hour of the day
+![Visualize percentage of delayed flights per hour of the day](/static/images/flights_per_hour.png)
+
+### Visualize percentage of delayed flights per route on a map
+![Visualize percentage of delayed flights per route on a map](/static/images/flights_by_route_map.png)
+
 
 ## Usage
 
