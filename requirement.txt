@@ -1,0 +1,7 @@
+flask 
+flask-cors
+sqlalchemy 
+pandas
+Matplotlib
+Seaborn
+Folium
