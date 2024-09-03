@@ -1,6 +1,7 @@
-from sqlalchemy import create_engine, text
-import pandas as pd
 import logging
+import pandas as pd
+from sqlalchemy import create_engine, text
+
 
 QUERY_FLIGHT_BY_ID = """
 SELECT flights.*, airlines.airline, flights.ID AS FLIGHT_ID, 

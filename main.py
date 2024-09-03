@@ -1,6 +1,7 @@
-from datetime import datetime
 import visualization
 import data
+from datetime import datetime
+
 
 
 SQLITE_URI = 'sqlite:///data/flights.sqlite3'
