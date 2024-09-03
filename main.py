@@ -1,4 +1,3 @@
-#main.py
 from datetime import datetime
 import visualization
 import data
