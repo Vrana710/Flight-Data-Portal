@@ -2,18 +2,21 @@ import logging
 import pandas as pd
 from sqlalchemy import create_engine, text
 
+
 class FlightData:
     def __init__(self, db_uri):
         """
         Initialize the FlightData object with a database URI.
-        
+
         :param db_uri: Database URI.
         """
+        logging.basicConfig(level=logging.INFO)
         self._engine = create_engine(db_uri)
 
     def _execute_query(self, query, params=None):
         """
-        Execute a SQL query with optional parameters and return the results as a list of dictionaries.
+        Execute a SQL query with optional parameters and return the 
+        results as a list of dictionaries.
 
         :param query: SQL query to execute.
         :param params: Parameters for the SQL query.
@@ -38,7 +41,7 @@ class FlightData:
         params = {'id': flight_id}
         query = """
         SELECT flights.*, airlines.airline, flights.ID AS FLIGHT_ID, 
-               flights.DEPARTURE_DELAY AS DELAY 
+               COALESCE(flights.DEPARTURE_DELAY, 0) AS DELAY 
         FROM flights 
         JOIN airlines ON flights.airline = airlines.id 
         WHERE flights.ID = :id
@@ -60,7 +63,8 @@ class FlightData:
                flights.DEPARTURE_DELAY AS DELAY 
         FROM flights 
         JOIN airlines ON flights.airline = airlines.id 
-        WHERE flights.DAY = :day AND flights.MONTH = :month 
+        WHERE flights.DAY = :day 
+              AND flights.MONTH = :month 
               AND flights.YEAR = :year
         """
         return self._execute_query(query, params)
@@ -80,6 +84,7 @@ class FlightData:
         JOIN airlines ON flights.airline = airlines.id 
         WHERE airlines.airline = :airline_name 
               AND flights.DEPARTURE_DELAY >= 20
+              AND flights.DEPARTURE_DELAY IS NOT NULL
         """
         return self._execute_query(query, params)
 
@@ -108,11 +113,12 @@ class FlightData:
         params = {'airport_code': airport_code}
         query = """
         SELECT flights.*, airlines.airline, flights.ID AS FLIGHT_ID, 
-            flights.DEPARTURE_DELAY AS DELAY 
+               flights.DEPARTURE_DELAY AS DELAY 
         FROM flights 
         JOIN airlines ON flights.airline = airlines.id 
         WHERE flights.ORIGIN_AIRPORT = :airport_code 
-            AND flights.DEPARTURE_DELAY >= 20
+              AND flights.DEPARTURE_DELAY >= 20
+              AND flights.DEPARTURE_DELAY IS NOT NULL
         """
         return self._execute_query(query, params)
 
@@ -140,16 +146,17 @@ class FlightData:
 
         hourly_stats AS (
             SELECT strftime('%H', DEPARTURE_TIME) AS hour,
-                COUNT(*) AS total_count,
-                SUM(CASE WHEN DEPARTURE_DELAY >= 20 THEN 1 ELSE 0 END) AS delayed_count
+                   COUNT(*) AS total_count,
+                   SUM(CASE WHEN DEPARTURE_DELAY >= 20 
+                            THEN 1 ELSE 0 END) AS delayed_count
             FROM flights
             WHERE YEAR = :year AND MONTH = :month AND DAY = :day
             GROUP BY hour
         )
 
         SELECT h.hour,
-            COALESCE(s.delayed_count, 0) AS delayed_count,
-            COALESCE(s.total_count, 0) AS total_count
+               COALESCE(s.delayed_count, 0) AS delayed_count,
+               COALESCE(s.total_count, 0) AS total_count
         FROM all_hours h
         LEFT JOIN hourly_stats s ON h.hour = s.hour
         ORDER BY h.hour;
@@ -160,13 +167,15 @@ class FlightData:
         """
         Retrieve a heatmap of flight delays between airports.
 
-        :return: DataFrame with origin, destination, and percentage of delayed flights.
+        :return: DataFrame with origin, destination, and percentage of 
+                 delayed flights.
         """
         query = """
         SELECT f.ORIGIN_AIRPORT AS origin_airport,
                f.DESTINATION_AIRPORT AS destination_airport,
                COUNT(*) AS total_flights,
-               SUM(CASE WHEN f.DEPARTURE_DELAY >= 20 THEN 1 ELSE 0 END) AS delayed_flights
+               SUM(CASE WHEN f.DEPARTURE_DELAY >= 20 
+                        THEN 1 ELSE 0 END) AS delayed_flights
         FROM flights f
         WHERE f.CANCELLED = 0 AND f.DIVERTED = 0
         GROUP BY f.ORIGIN_AIRPORT, f.DESTINATION_AIRPORT
@@ -180,15 +189,17 @@ class FlightData:
         """
         Retrieve average percentage of delayed flights per route.
 
-        :return: List of dictionaries containing average delay percentages per route.
+        :return: List of dictionaries containing average delay percentages.
         """
         query = """
         WITH flight_data AS (
             SELECT f.ORIGIN_AIRPORT,
                    f.DESTINATION_AIRPORT,
                    COUNT(*) AS total_count,
-                   SUM(CASE WHEN f.DEPARTURE_DELAY >= 20 THEN 1 ELSE 0 END) AS delay_count,
-                   (SUM(CASE WHEN f.DEPARTURE_DELAY >= 20 THEN 1 ELSE 0 END) * 100.0 / COUNT(*)) AS percentage,
+                   SUM(CASE WHEN f.DEPARTURE_DELAY >= 20 
+                            THEN 1 ELSE 0 END) AS delay_count,
+                   (SUM(CASE WHEN f.DEPARTURE_DELAY >= 20 
+                             THEN 1 ELSE 0 END) * 100.0 / COUNT(*)) AS percentage,
                    ao.LATITUDE AS origin_latitude,
                    ao.LONGITUDE AS origin_longitude,
                    ad.LATITUDE AS destination_latitude,
@@ -220,18 +231,21 @@ class FlightData:
 
     def get_delayed_flights_per_route_map(self, day, month, year):
         """
-        Retrieve delayed flights per route with percentage of delays for a specific date.
+        Retrieve delayed flights per route with percentage of 
+        delays for a specific date.
 
         :param day: Day of the flights.
         :param month: Month of the flights.
         :param year: Year of the flights.
-        :return: List of dictionaries containing percentage of delayed flights per route.
+        :return: List of dictionaries containing percentage of 
+        delayed flights per route.
         """
         params = {'day': day, 'month': month, 'year': year}
         query = """
         SELECT ORIGIN_AIRPORT AS origin_airport,
                DESTINATION_AIRPORT AS destination_airport,
-               (SUM(CASE WHEN DEPARTURE_DELAY >= 20 THEN 1 ELSE 0 END) * 100.0 / COUNT(*)) AS percentage
+               (SUM(CASE WHEN DEPARTURE_DELAY >= 20 
+                        THEN 1 ELSE 0 END) * 100.0 / COUNT(*)) AS percentage
         FROM flights
         GROUP BY ORIGIN_AIRPORT, DESTINATION_AIRPORT
         """
@@ -241,30 +255,33 @@ class FlightData:
         """
         Retrieve coordinates for all airports.
 
-        :return: Dictionary with airport IATA codes as keys and tuples of (latitude, longitude) as values.
+        :return: Dictionary with airport IATA codes as keys and 
+                 tuples of (latitude, longitude) as values.
         """
-        query = "SELECT IATA_CODE, LATITUDE, LONGITUDE FROM airports"
+        query = """
+        SELECT IATA_CODE, LATITUDE, LONGITUDE 
+        FROM airports
+        """
         results = self._execute_query(query)
         coordinates = {}
         for row in results:
             iata_code = row['IATA_CODE']
             latitude = row['LATITUDE']
             longitude = row['LONGITUDE']
-            
             if latitude and longitude:
                 try:
                     latitude = float(latitude)
                     longitude = float(longitude)
                     coordinates[iata_code] = (latitude, longitude)
                 except ValueError:
-                    logging.warning("Invalid coordinate values for %s: %s, %s", 
-                                    iata_code, latitude, longitude)
+                    logging.warning(
+                        "Invalid coordinate values for %s: %s, %s", 
+                        iata_code, latitude, longitude
+                    )
             else:
                 logging.warning("Missing coordinate values for %s", iata_code)
         return coordinates
 
     def __del__(self):
-        """
-        Dispose of the SQLAlchemy engine when the object is deleted.
-        """
+        """Dispose of the SQLAlchemy engine when the object is deleted."""
         self._engine.dispose()

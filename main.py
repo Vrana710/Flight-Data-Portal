@@ -2,8 +2,6 @@ import visualization
 import data
 from datetime import datetime
 
-
-
 SQLITE_URI = 'sqlite:///data/flights.sqlite3'
 IATA_LENGTH = 3
 
@@ -18,6 +16,7 @@ def delayed_flights_by_airline(data_manager):
     airline_input = input("Enter airline name: ")
     results = data_manager.get_delayed_flights_by_airline(airline_input)
     print_results(results)
+
 
 def delayed_flights_by_airport(data_manager):
     """
@@ -36,6 +35,7 @@ def delayed_flights_by_airport(data_manager):
         else:
             print(f"Invalid IATA code. It should be {IATA_LENGTH} letters long.")
 
+
 def flight_by_id(data_manager):
     """
     Asks the user for a flight ID, validates input, and retrieves
@@ -51,6 +51,7 @@ def flight_by_id(data_manager):
             break
         except ValueError:
             print("Invalid input. Please enter a numeric flight ID.")
+
 
 def flights_by_date(data_manager):
     """
@@ -76,6 +77,7 @@ def flights_by_date(data_manager):
         except ValueError:
             print("Invalid date format. Please enter date in DD/MM/YYYY format.")
 
+
 def print_results(results):
     """
     Prints the flight results. Each result should contain the columns:
@@ -100,6 +102,7 @@ def print_results(results):
 
         except (ValueError, KeyError) as e:
             print(f"Error showing results: {e}")
+
 
 def show_menu_and_get_input():
     """
@@ -131,6 +134,7 @@ FUNCTIONS = {
     8: (visualization.plot_delayed_flights_map, "Visualize percentage of delayed flights per route on a map"),
     9: (quit, "Exit")
 }
+
 
 def main():
     """
@@ -164,6 +168,7 @@ def main():
                     print("Invalid date format. Please use DD/MM/YYYY.")            
         else:
             choice_func(data_manager)
+
 
 if __name__ == "__main__":
     main()

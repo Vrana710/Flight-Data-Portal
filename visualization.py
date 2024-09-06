@@ -2,10 +2,12 @@ import folium
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-from data import FlightData
 import numpy as np
 from folium import plugins
 from datetime import datetime
+
+from data import FlightData
+
 
 def visualize_delayed_flights_per_airline(data_manager):
     """
@@ -14,7 +16,7 @@ def visualize_delayed_flights_per_airline(data_manager):
     :param data_manager: Instance of FlightData to fetch flight data.
     """
     results = data_manager.get_all_delayed_flights_grouped_by_airline()
-    
+
     if not results:
         print("No results found.")
         return
@@ -30,6 +32,7 @@ def visualize_delayed_flights_per_airline(data_manager):
     plt.xticks(rotation=90)
     plt.tight_layout()
     plt.show()
+
 
 def plot_delayed_flights_per_hour(data_manager, date):
     """
@@ -68,6 +71,7 @@ def plot_delayed_flights_per_hour(data_manager, date):
     plt.tight_layout()
     plt.show()
 
+
 def plot_delayed_flights_heatmap(data_manager):
     """
     Plot a heatmap showing the percentage of delayed flights for each route.
@@ -85,6 +89,7 @@ def plot_delayed_flights_heatmap(data_manager):
     plt.ylabel("Origin Airport")
     plt.show()
 
+
 def get_color_for_percentage(percentage):
     """
     Return a color based on the percentage of delay.
@@ -101,27 +106,28 @@ def get_color_for_percentage(percentage):
     else:
         return '#FF0000'  # Red for severe delay
 
+
 def plot_delayed_flights_map(data_manager, day, month, year):
     flights = data_manager.get_delayed_flights_per_route_map(day, month, year)
-    
+
     if not flights:
         print("No flight data available.")
         return
-    
+
     df = pd.DataFrame(flights)
-    
+
     if 'origin_airport' not in df.columns or 'destination_airport' not in df.columns or 'percentage' not in df.columns:
         print("Required columns are missing in the data.")
         return
-    
+
     airport_locations = data_manager.get_airport_coordinates()
     if not airport_locations:
         print("No airport coordinates data available.")
         return
-    
+
     map_center = [37.0902, -95.7129]  # Center of the US
     map = folium.Map(location=map_center, zoom_start=4)
-    
+
     for airport, coords in airport_locations.items():
         if coords and all(isinstance(coord, (int, float)) for coord in coords):
             folium.Marker(
@@ -130,12 +136,12 @@ def plot_delayed_flights_map(data_manager, day, month, year):
             ).add_to(map)
         else:
             print(f"Invalid coordinates for airport {airport}: {coords}")
-    
+
     for _, row in df.iterrows():
         origin = row['origin_airport']
         destination = row['destination_airport']
         percentage = row['percentage']
-    
+
         origin_coords = airport_locations.get(origin)
         dest_coords = airport_locations.get(destination)
         if (origin_coords and dest_coords and 
@@ -148,7 +154,7 @@ def plot_delayed_flights_map(data_manager, day, month, year):
             ).add_to(map)
         else:
             print(f"Invalid coordinates for route {origin} -> {destination}: {origin_coords}, {dest_coords}")
-    
+
     map_file = 'delayed_flights_map.html'
     map.save(map_file)
     print(f"Map has been saved to {map_file}.")
@@ -173,6 +179,7 @@ def main():
     plot_delayed_flights_per_hour(data_manager, date)
     plot_delayed_flights_heatmap(data_manager)
     plot_delayed_flights_map(data_manager)
+
 
 if __name__ == "__main__":
     main()
