@@ -96,7 +96,8 @@ def print_results(results):
             flight_id = result.get('FLIGHT_ID', 'Unknown')
 
             if delay >= 0:
-                print(f"{flight_id}. {origin} -> {dest} by {airline}, Delay: {delay} Minutes")
+                print(f"{flight_id}. {origin} -> {dest} by {airline}", 
+                      f"Delay: {delay} Minutes")
             else:
                 print(f"{flight_id}. {origin} -> {dest} by {airline}")
 
@@ -128,10 +129,14 @@ FUNCTIONS = {
     2: (flights_by_date, "Show flights by date"),
     3: (delayed_flights_by_airline, "Delayed flights by airline"),
     4: (delayed_flights_by_airport, "Delayed flights by origin airport"),
-    5: (visualization.visualize_delayed_flights_per_airline, "Visualize delayed flights by airline"),
-    6: (visualization.plot_delayed_flights_per_hour, "Visualize percentage of delayed flights per hour of the day"),
-    7: (visualization.plot_delayed_flights_heatmap, "Visualize percentage of delayed flights by route"),
-    8: (visualization.plot_delayed_flights_map, "Visualize percentage of delayed flights per route on a map"),
+    5: (visualization.visualize_delayed_flights_per_airline, 
+        "Visualize delayed flights by airline"),
+    6: (visualization.plot_delayed_flights_per_hour, 
+        "Visualize percentage of delayed flights per hour of the day"),
+    7: (visualization.plot_delayed_flights_heatmap, 
+        "Visualize percentage of delayed flights by route"),
+    8: (visualization.plot_delayed_flights_map, 
+        "Visualize percentage of delayed flights per route on a map"),
     9: (quit, "Exit")
 }
 
@@ -163,6 +168,7 @@ def main():
                     date = datetime.strptime(date_input, '%d/%m/%Y')
                     day, month, year = date.day, date.month, date.year
                     choice_func(data_manager, day, month, year)
+                    #choice_func(data_manager, date)
                     break
                 except ValueError:
                     print("Invalid date format. Please use DD/MM/YYYY.")            

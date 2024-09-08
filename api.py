@@ -13,7 +13,8 @@ data_manager = FlightData(db_uri)
 @app.route('/', methods=['GET'])
 def home():
     """
-    This function is the route handler for the root URL ("/") of the web application.
+    This function is the route handler for the root URL ("/") 
+    of the web application.
     It returns the rendered HTML template "Flight_Data_Portal.html".
 
     Parameters:

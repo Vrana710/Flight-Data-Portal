@@ -145,18 +145,19 @@ class FlightData:
         ),
 
         hourly_stats AS (
-            SELECT strftime('%H', DEPARTURE_TIME) AS hour,
-                   COUNT(*) AS total_count,
-                   SUM(CASE WHEN DEPARTURE_DELAY >= 20 
-                            THEN 1 ELSE 0 END) AS delayed_count
+            SELECT 
+                -- Extract the hour from the departure time (assuming it's in HHMM format)
+                substr('00' || DEPARTURE_TIME, -4, 2) AS hour,
+                COUNT(*) AS total_count,
+                SUM(CASE WHEN DEPARTURE_DELAY >= 20 THEN 1 ELSE 0 END) AS delayed_count
             FROM flights
-            WHERE YEAR = :year AND MONTH = :month AND DAY = :day
+            WHERE YEAR = 2015 AND MONTH = 1 AND DAY = 1
             GROUP BY hour
         )
 
         SELECT h.hour,
-               COALESCE(s.delayed_count, 0) AS delayed_count,
-               COALESCE(s.total_count, 0) AS total_count
+            COALESCE(s.delayed_count, 0) AS delayed_count,
+            COALESCE(s.total_count, 0) AS total_count
         FROM all_hours h
         LEFT JOIN hourly_stats s ON h.hour = s.hour
         ORDER BY h.hour;

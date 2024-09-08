@@ -1,11 +1,10 @@
 import folium
 import matplotlib.pyplot as plt
 import pandas as pd
-import seaborn as sns
 import numpy as np
+import seaborn as sns
 from folium import plugins
 from datetime import datetime
-
 from data import FlightData
 
 
@@ -22,10 +21,10 @@ def visualize_delayed_flights_per_airline(data_manager):
         return
 
     airlines = [result['AIRLINE'] for result in results]
-    delay_counts = [result['delay_count'] for result in results]
+    delay_counts = [int(result['delay_count']) for result in results]  # Ensure delay_count is an integer
 
     plt.figure(figsize=(10, 6))
-    plt.bar(airlines, delay_counts)
+    plt.bar(airlines, delay_counts)  # delay_counts now a list of integers
     plt.xlabel('Airline')
     plt.ylabel('Number of Delayed Flights')
     plt.title('Number of Delayed Flights per Airline')
@@ -44,12 +43,15 @@ def plot_delayed_flights_per_hour(data_manager, date):
     day, month, year = date.day, date.month, date.year
     results = data_manager.get_delayed_flights_per_hour(day, month, year)
 
-    hours = [result['hour'] for result in results]
-    delayed_counts = [result['delayed_count'] for result in results]
-    total_counts = [result['total_count'] for result in results]
+    # Extract hour, delayed counts, and total counts, ensure hours are integers
+    hours = [int(result['hour']) for result in results]  
+    delayed_counts = [int(result['delayed_count']) for result in results]
+    total_counts = [int(result['total_count']) for result in results]
 
-    all_hours = [f"{hour:02}" for hour in range(24)]
+    # Define all hours of the day (from 00 to 23) as integers for plotting
+    all_hours = list(range(24))
 
+    # Calculate percentage of delayed flights for each hour
     percentages = []
     for hour in all_hours:
         if hour in hours:
@@ -61,12 +63,20 @@ def plot_delayed_flights_per_hour(data_manager, date):
             percentage = 0
         percentages.append(percentage)
 
+    # Plot the results using numeric hours
     plt.figure(figsize=(12, 6))
-    plt.bar(all_hours, percentages, color='coral')
+
+    # Set color based on percentage
+    colors = sns.color_palette("YlGnBu", as_cmap=True)(plt.Normalize(0, 100)(percentages))
+    
+    plt.bar(all_hours, percentages, color=colors)
+
+    # Set integer hours for the x-ticks, but display formatted strings
+    plt.xticks(ticks=all_hours, labels=[f"{hour:02d}" for hour in all_hours], rotation=45)
+
     plt.xlabel('Hour of the Day')
     plt.ylabel('Percentage of Delayed Flights')
     plt.title(f'Percentage of Delayed Flights per Hour on {date.strftime("%d/%m/%Y")}')
-    plt.xticks(rotation=45)
     plt.ylim(0, 100)  # Limit y-axis to 0-100%
     plt.tight_layout()
     plt.show()
@@ -140,7 +150,7 @@ def plot_delayed_flights_map(data_manager, day, month, year):
     for _, row in df.iterrows():
         origin = row['origin_airport']
         destination = row['destination_airport']
-        percentage = row['percentage']
+        percentage = float(row['percentage'])  # Ensure percentage is a float
 
         origin_coords = airport_locations.get(origin)
         dest_coords = airport_locations.get(destination)
