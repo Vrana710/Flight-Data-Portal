@@ -13,6 +13,7 @@ class FlightData:
         logging.basicConfig(level=logging.INFO)
         self._engine = create_engine(db_uri)
 
+
     def _execute_query(self, query, params=None):
         """
         Execute a SQL query with optional parameters and return the 
@@ -31,6 +32,7 @@ class FlightData:
             logging.error("Error executing query: %s", ex)
             return []
 
+
     def get_flight_by_id(self, flight_id):
         """
         Retrieve flight details by flight ID.
@@ -47,6 +49,7 @@ class FlightData:
         WHERE flights.ID = :id
         """
         return self._execute_query(query, params)
+
 
     def get_flights_by_date(self, day, month, year):
         """
@@ -69,6 +72,7 @@ class FlightData:
         """
         return self._execute_query(query, params)
 
+
     def get_delayed_flights_by_airline(self, airline_name):
         """
         Retrieve delayed flights for a specific airline.
@@ -88,6 +92,7 @@ class FlightData:
         """
         return self._execute_query(query, params)
 
+
     def get_all_delayed_flights_grouped_by_airline(self):
         """
         Retrieve all delayed flights grouped by airline.
@@ -102,6 +107,7 @@ class FlightData:
         GROUP BY airlines.airline
         """
         return self._execute_query(query)
+
 
     def get_delayed_flights_by_airport(self, airport_code):
         """
@@ -121,6 +127,7 @@ class FlightData:
               AND flights.DEPARTURE_DELAY IS NOT NULL
         """
         return self._execute_query(query, params)
+
 
     def get_delayed_flights_per_hour(self, day, month, year):
         """
@@ -164,6 +171,7 @@ class FlightData:
         """
         return self._execute_query(query, params)
 
+
     def get_flight_delays_heatmap(self):
         """
         Retrieve a heatmap of flight delays between airports.
@@ -185,6 +193,7 @@ class FlightData:
         df = pd.DataFrame(results)
         df['percentage'] = (df['delayed_flights'] / df['total_flights']) * 100
         return df[['origin_airport', 'destination_airport', 'percentage']]
+
 
     def get_delayed_flights_average_per_route(self):
         """
@@ -230,6 +239,7 @@ class FlightData:
         """
         return self._execute_query(query)
 
+
     def get_delayed_flights_per_route_map(self, day, month, year):
         """
         Retrieve delayed flights per route with percentage of 
@@ -251,6 +261,7 @@ class FlightData:
         GROUP BY ORIGIN_AIRPORT, DESTINATION_AIRPORT
         """
         return self._execute_query(query, params)
+
 
     def get_airport_coordinates(self):
         """
@@ -282,6 +293,7 @@ class FlightData:
             else:
                 logging.warning("Missing coordinate values for %s", iata_code)
         return coordinates
+
 
     def __del__(self):
         """Dispose of the SQLAlchemy engine when the object is deleted."""
