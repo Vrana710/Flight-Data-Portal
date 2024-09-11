@@ -25,7 +25,7 @@ class FlightData:
 
     def _execute_query(self, query, params=None):
         """
-        Execute a SQL query with optional parameters and return the 
+        Execute a SQL query with optional parameters and return the
         results as a list of dictionaries.
         :param query: SQL query to execute.
         :param params: Parameters for the SQL query.
@@ -44,7 +44,6 @@ class FlightData:
     def get_flight_by_id(self, flight_id):
         """
         Retrieve flight details by flight ID.
-
         :param flight_id: ID of the flight.
         :return: List of dictionaries containing flight details.
         """
@@ -62,7 +61,6 @@ class FlightData:
     def get_flights_by_date(self, day, month, year):
         """
         Retrieve flights for a specific date.
-
         :param day: Day of the flight.
         :param month: Month of the flight.
         :param year: Year of the flight.
@@ -84,7 +82,6 @@ class FlightData:
     def get_delayed_flights_by_airline(self, airline_name):
         """
         Retrieve delayed flights for a specific airline.
-
         :param airline_name: Name of the airline.
         :return: List of dictionaries containing delayed flights.
         """
@@ -104,7 +101,6 @@ class FlightData:
     def get_all_delayed_flights_grouped_by_airline(self):
         """
         Retrieve all delayed flights grouped by airline.
-
         :return: List of dictionaries containing delayed flights by airline.
         """
         query = """
@@ -121,7 +117,6 @@ class FlightData:
     def get_delayed_flights_by_airport(self, airport_code):
         """
         Retrieve delayed flights for a specific airport.
-
         :param airport_code: Code of the airport.
         :return: List of dictionaries containing delayed flights.
         """
@@ -141,7 +136,6 @@ class FlightData:
     def get_delayed_flights_per_hour(self, day, month, year):
         """
         Retrieve delayed flights grouped by hour for a specific date.
-
         :param day: Day of the flights.
         :param month: Month of the flights.
         :param year: Year of the flights.
@@ -184,15 +178,14 @@ class FlightData:
     def get_flight_delays_heatmap(self):
         """
         Retrieve a heatmap of flight delays between airports.
-
-        :return: DataFrame with origin, destination, and percentage of 
-                 delayed flights.
+        :return: DataFrame with origin, destination, and percentage of
+                delayed flights.
         """
         query = """
         SELECT f.ORIGIN_AIRPORT AS origin_airport,
                f.DESTINATION_AIRPORT AS destination_airport,
                COUNT(*) AS total_flights,
-               SUM(CASE WHEN COALESCE(NULLIF(f.DEPARTURE_DELAY, ''), 0) > 20 
+               SUM(CASE WHEN COALESCE(NULLIF(f.DEPARTURE_DELAY, ''), 0) > 20
                         THEN 1 ELSE 0 END) AS delayed_flights
         FROM flights f
         WHERE f.CANCELLED = 0 AND f.DIVERTED = 0
@@ -207,7 +200,6 @@ class FlightData:
     def get_delayed_flights_average_per_route(self):
         """
         Retrieve average percentage of delayed flights per route.
-
         :return: List of dictionaries containing average delay percentages.
         """
         query = """
@@ -253,7 +245,6 @@ class FlightData:
         """
         Retrieve delayed flights per route with percentage of 
         delays for a specific date.
-
         :param day: Day of the flights.
         :param month: Month of the flights.
         :param year: Year of the flights.
@@ -275,9 +266,8 @@ class FlightData:
     def get_airport_coordinates(self):
         """
         Retrieve coordinates for all airports.
-
         :return: Dictionary with airport IATA codes as keys and 
-                 tuples of (latitude, longitude) as values.
+                tuples of (latitude, longitude) as values.
         """
         query = """
         SELECT IATA_CODE, LATITUDE, LONGITUDE 
