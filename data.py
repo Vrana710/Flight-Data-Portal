@@ -193,9 +193,10 @@ class FlightData:
         """
         results = self._execute_query(query)
         new_data_frame = pd.DataFrame(results)
-        new_data_frame['percentage'] = (new_data_frame['delayed_flights'] / new_data_frame['total_flights']) * 100
+        new_data_frame['percentage'] = (
+            (new_data_frame['delayed_flights'] / new_data_frame['total_flights']) * 100
+        )
         return new_data_frame[['origin_airport', 'destination_airport', 'percentage']]
-
 
     def get_delayed_flights_average_per_route(self):
         """
