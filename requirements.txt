@@ -5,3 +5,4 @@ pandas
 Matplotlib
 Seaborn
 Folium
+sqlalchemy.exc

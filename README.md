@@ -46,7 +46,11 @@ The Flight Data Portal is a web application designed to query and visualize flig
 3. **Install the required Python packages:**
 
    ```bash
-   pip install flask flask-cors sqlalchemy pandas matplotlib seaborn folium
+   pip3 install flask flask-cors sqlalchemy pandas matplotlib seaborn folium
+
+   OR
+
+   pip3 install -r requirements.txt
    ```
 
 4. **Set up the database:**
