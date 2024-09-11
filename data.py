@@ -1,9 +1,18 @@
+"""
+This module provides functionality for retrieving and analyzing flight data
+from a SQL database.
+"""
+
 import logging
 import pandas as pd
 from sqlalchemy import create_engine, text
+from sqlalchemy.exc import SQLAlchemyError
 
 
 class FlightData:
+    """
+    Class for handling flight data operations with a database.
+    """
     def __init__(self, db_uri):
         """
         Initialize the FlightData object with a database URI.
@@ -18,7 +27,6 @@ class FlightData:
         """
         Execute a SQL query with optional parameters and return the 
         results as a list of dictionaries.
-
         :param query: SQL query to execute.
         :param params: Parameters for the SQL query.
         :return: List of dictionaries representing the query result.
@@ -28,8 +36,8 @@ class FlightData:
                 result = connection.execute(text(query), params or {})
                 columns = result.keys()
                 return [dict(zip(columns, row)) for row in result.fetchall()]
-        except Exception as ex:
-            logging.error("Error executing query: %s", ex)
+        except SQLAlchemyError as ex:
+            logging.error("SQLAlchemy Error: %s", ex)
             return []
 
 
@@ -43,7 +51,7 @@ class FlightData:
         params = {'id': flight_id}
         query = """
         SELECT flights.*, airlines.airline, flights.ID AS FLIGHT_ID, 
-               COALESCE(flights.DEPARTURE_DELAY, 0) AS DELAY 
+               COALESCE(NULLIF(flights.DEPARTURE_DELAY,''), 0) AS DELAY 
         FROM flights 
         JOIN airlines ON flights.airline = airlines.id 
         WHERE flights.ID = :id
@@ -62,8 +70,8 @@ class FlightData:
         """
         params = {'day': day, 'month': month, 'year': year}
         query = """
-        SELECT flights.*, airlines.airline, flights.ID AS FLIGHT_ID, 
-               flights.DEPARTURE_DELAY AS DELAY 
+        SELECT flights.*, airlines.airline, flights.ID AS FLIGHT_ID,
+               COALESCE(NULLIF(flights.DEPARTURE_DELAY,''), 0) AS DELAY  
         FROM flights 
         JOIN airlines ON flights.airline = airlines.id 
         WHERE flights.DAY = :day 
@@ -82,12 +90,12 @@ class FlightData:
         """
         params = {'airline_name': airline_name}
         query = """
-        SELECT flights.*, airlines.airline, flights.ID AS FLIGHT_ID, 
-               flights.DEPARTURE_DELAY AS DELAY 
+        SELECT flights.*, airlines.airline, flights.ID AS FLIGHT_ID,
+               COALESCE(NULLIF(flights.DEPARTURE_DELAY,''), 0) AS DELAY 
         FROM flights 
         JOIN airlines ON flights.airline = airlines.id 
         WHERE airlines.airline = :airline_name 
-              AND flights.DEPARTURE_DELAY >= 20
+              AND COALESCE(NULLIF(flights.DEPARTURE_DELAY, ''), 0) > 20 
               AND flights.DEPARTURE_DELAY IS NOT NULL
         """
         return self._execute_query(query, params)
@@ -100,11 +108,12 @@ class FlightData:
         :return: List of dictionaries containing delayed flights by airline.
         """
         query = """
-        SELECT airlines.airline, COUNT(*) AS delay_count
+        SELECT airlines.airline, 
+               COUNT(*) AS delay_count
         FROM flights
         JOIN airlines ON flights.airline = airlines.id
-        WHERE flights.DEPARTURE_DELAY >= 20
-        GROUP BY airlines.airline
+        WHERE COALESCE(NULLIF(flights.DEPARTURE_DELAY, ''), 0) > 20 
+              GROUP BY airlines.airline
         """
         return self._execute_query(query)
 
@@ -119,11 +128,11 @@ class FlightData:
         params = {'airport_code': airport_code}
         query = """
         SELECT flights.*, airlines.airline, flights.ID AS FLIGHT_ID, 
-               flights.DEPARTURE_DELAY AS DELAY 
+               COALESCE(NULLIF(flights.DEPARTURE_DELAY,''), 0) AS DELAY 
         FROM flights 
         JOIN airlines ON flights.airline = airlines.id 
         WHERE flights.ORIGIN_AIRPORT = :airport_code 
-              AND flights.DEPARTURE_DELAY >= 20
+              AND COALESCE(NULLIF(flights.DEPARTURE_DELAY, ''), 0) > 20 
               AND flights.DEPARTURE_DELAY IS NOT NULL
         """
         return self._execute_query(query, params)
@@ -156,7 +165,7 @@ class FlightData:
                 -- Extract the hour from the departure time (assuming it's in HHMM format)
                 substr('00' || DEPARTURE_TIME, -4, 2) AS hour,
                 COUNT(*) AS total_count,
-                SUM(CASE WHEN DEPARTURE_DELAY >= 20 THEN 1 ELSE 0 END) AS delayed_count
+                SUM(CASE WHEN COALESCE(NULLIF(DEPARTURE_DELAY, ''), 0) > 20 THEN 1 ELSE 0 END) AS delayed_count
             FROM flights
             WHERE YEAR = 2015 AND MONTH = 1 AND DAY = 1
             GROUP BY hour
@@ -183,7 +192,7 @@ class FlightData:
         SELECT f.ORIGIN_AIRPORT AS origin_airport,
                f.DESTINATION_AIRPORT AS destination_airport,
                COUNT(*) AS total_flights,
-               SUM(CASE WHEN f.DEPARTURE_DELAY >= 20 
+               SUM(CASE WHEN COALESCE(NULLIF(f.DEPARTURE_DELAY, ''), 0) > 20 
                         THEN 1 ELSE 0 END) AS delayed_flights
         FROM flights f
         WHERE f.CANCELLED = 0 AND f.DIVERTED = 0
@@ -206,7 +215,7 @@ class FlightData:
             SELECT f.ORIGIN_AIRPORT,
                    f.DESTINATION_AIRPORT,
                    COUNT(*) AS total_count,
-                   SUM(CASE WHEN f.DEPARTURE_DELAY >= 20 
+                   SUM(CASE WHEN COALESCE(NULLIF(f.DEPARTURE_DELAY, ''), 0) > 20 
                             THEN 1 ELSE 0 END) AS delay_count,
                    (SUM(CASE WHEN f.DEPARTURE_DELAY >= 20 
                              THEN 1 ELSE 0 END) * 100.0 / COUNT(*)) AS percentage,
@@ -255,7 +264,7 @@ class FlightData:
         query = """
         SELECT ORIGIN_AIRPORT AS origin_airport,
                DESTINATION_AIRPORT AS destination_airport,
-               (SUM(CASE WHEN DEPARTURE_DELAY >= 20 
+               (SUM(CASE WHEN COALESCE(NULLIF(DEPARTURE_DELAY, ''), 0) > 20
                         THEN 1 ELSE 0 END) * 100.0 / COUNT(*)) AS percentage
         FROM flights
         GROUP BY ORIGIN_AIRPORT, DESTINATION_AIRPORT

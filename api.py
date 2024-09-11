@@ -1,14 +1,32 @@
+"""
+api.py
+This module defines the Flask application and routes for the flight data API.
+The API provides endpoints to retrieve flight data based on various criteria such as:
+- Flight ID
+- Date
+- Airline
+- Airport
+- Delayed flights
+- Heatmap and route map visualizations
+Dependencies:
+- Flask
+- Flask-CORS
+- data (custom module for data management)
+The application is configured to run on port 5000 by default with debugging enabled.
+"""
+
 from flask import Flask, request, jsonify, render_template
-from data import FlightData
 from flask_cors import CORS
+from data import FlightData
+
 
 app = Flask(__name__)
 CORS(app)
 
 
 # Initialize FlightData
-db_uri = 'sqlite:///data/flights.sqlite3'
-data_manager = FlightData(db_uri)
+DB_URI = 'sqlite:///data/flights.sqlite3'
+data_manager = FlightData(DB_URI)
 
 @app.route('/', methods=['GET'])
 def home():
@@ -301,6 +319,7 @@ def get_delayed_flights_per_route_map():
     results = data_manager.get_delayed_flights_per_route_map(day, month, year)
     return jsonify(results)
 
+
+# Run the Flask application
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
-    

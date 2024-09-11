@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?><sqlb_project><db path="/Users/varsha/Python/MasterSchoolData/Project/Codio_Project/Flight-Data-Portal/data/flights.sqlite3" readonly="0" foreign_keys="1" case_sensitive_like="0" temp_store="0" wal_autocheckpoint="1000" synchronous="2"/><attached/><window><main_tabs open="structure browser pragmas query" current="3"/></window><tab_structure><column_width id="0" width="300"/><column_width id="1" width="0"/><column_width id="2" width="100"/><column_width id="3" width="4379"/><column_width id="4" width="0"/><expanded_item id="0" parent="1"/><expanded_item id="1" parent="1"/><expanded_item id="2" parent="1"/><expanded_item id="3" parent="1"/></tab_structure><tab_browse><current_table name="4,8:mainairlines"/><default_encoding codec=""/><browse_table_settings/></tab_browse><tab_sql><sql name="SQL 1">WITH flight_counts AS (
+    SELECT f.ORIGIN_AIRPORT, 
+           COUNT(*) AS num_of_flights
+    FROM flights f
+    GROUP BY f.ORIGIN_AIRPORT
+    HAVING COUNT(*) &gt; 5000
+),
+average_delays AS (
+    SELECT f.ORIGIN_AIRPORT,
+           ROUND(AVG(
+               (CASE 
+                    WHEN COALESCE(f.ARRIVAL_DELAY, 0) &gt; 0 THEN COALESCE(f.ARRIVAL_DELAY, 0) 
+                    ELSE 0 
+               END +
+               CASE 
+                    WHEN COALESCE(f.DEPARTURE_DELAY, 0) &gt; 0 THEN COALESCE(f.DEPARTURE_DELAY, 0) 
+                    ELSE 0 
+               END
+               ) / 2
+           )) AS average_delay
+    FROM flights f
+    JOIN flight_counts fc ON f.ORIGIN_AIRPORT = fc.ORIGIN_AIRPORT
+    GROUP BY f.ORIGIN_AIRPORT
+)
+SELECT a.AIRPORT AS airport,
+       fc.num_of_flights,
+       ad.average_delay
+FROM average_delays ad
+JOIN flight_counts fc ON ad.ORIGIN_AIRPORT = fc.ORIGIN_AIRPORT
+JOIN airports a ON ad.ORIGIN_AIRPORT = a.IATA_CODE
+ORDER BY ad.average_delay DESC;</sql><current_tab id="0"/></tab_sql></sqlb_project>
