@@ -192,9 +192,9 @@ class FlightData:
         GROUP BY f.ORIGIN_AIRPORT, f.DESTINATION_AIRPORT
         """
         results = self._execute_query(query)
-        df = pd.DataFrame(results)
-        df['percentage'] = (df['delayed_flights'] / df['total_flights']) * 100
-        return df[['origin_airport', 'destination_airport', 'percentage']]
+        new_data_frame = pd.DataFrame(results)
+        new_data_frame['percentage'] = (new_data_frame['delayed_flights'] / new_data_frame['total_flights']) * 100
+        return new_data_frame[['origin_airport', 'destination_airport', 'percentage']]
 
 
     def get_delayed_flights_average_per_route(self):
@@ -243,12 +243,12 @@ class FlightData:
 
     def get_delayed_flights_per_route_map(self, day, month, year):
         """
-        Retrieve delayed flights per route with percentage of 
+        Retrieve delayed flights per route with percentage of
         delays for a specific date.
         :param day: Day of the flights.
         :param month: Month of the flights.
         :param year: Year of the flights.
-        :return: List of dictionaries containing percentage of 
+        :return: List of dictionaries containing percentage of
         delayed flights per route.
         """
         params = {'day': day, 'month': month, 'year': year}
@@ -266,7 +266,7 @@ class FlightData:
     def get_airport_coordinates(self):
         """
         Retrieve coordinates for all airports.
-        :return: Dictionary with airport IATA codes as keys and 
+        :return: Dictionary with airport IATA codes as keys and
                 tuples of (latitude, longitude) as values.
         """
         query = """
@@ -286,7 +286,7 @@ class FlightData:
                     coordinates[iata_code] = (latitude, longitude)
                 except ValueError:
                     logging.warning(
-                        "Invalid coordinate values for %s: %s, %s", 
+                        "Invalid coordinate values for %s: %s, %s",
                         iata_code, latitude, longitude
                     )
             else:
